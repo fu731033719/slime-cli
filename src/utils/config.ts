@@ -6,6 +6,27 @@ import { ChatConfig } from '../types';
 
 dotenv.config({ path: process.env.DOTENV_CONFIG_PATH || '.env', quiet: true });
 
+type SupportedProvider = 'openai' | 'anthropic' | 'deepseek' | 'minimax';
+
+const PROVIDER_DEFAULTS: Record<SupportedProvider, { apiUrl: string; model: string }> = {
+  openai: {
+    apiUrl: 'https://api.openai.com/v1/chat/completions',
+    model: 'gpt-4o-mini',
+  },
+  anthropic: {
+    apiUrl: 'https://api.anthropic.com/v1/messages',
+    model: 'claude-3-5-sonnet-latest',
+  },
+  deepseek: {
+    apiUrl: 'https://api.deepseek.com/v1',
+    model: 'deepseek-chat',
+  },
+  minimax: {
+    apiUrl: 'https://api.minimaxi.com/v1',
+    model: 'MiniMax-M2.7',
+  },
+};
+
 export class ConfigManager {
   private static resolvedDir: string | null = null;
 
@@ -81,15 +102,28 @@ export class ConfigManager {
   }
 
   static getDefaultConfig(): ChatConfig {
-    const apiUrl = process.env.GAUZ_LLM_API_BASE || 'https://api.openai.com/v1/chat/completions';
-    const model = process.env.GAUZ_LLM_MODEL || 'gpt-3.5-turbo';
+    const envProvider = (process.env.GAUZ_LLM_PROVIDER || '').trim().toLowerCase();
+    const rawApiUrl = process.env.GAUZ_LLM_API_BASE;
+    const rawModel = process.env.GAUZ_LLM_MODEL;
 
-    let provider: 'openai' | 'anthropic' = 'openai';
-    if (process.env.GAUZ_LLM_PROVIDER === 'openai' || process.env.GAUZ_LLM_PROVIDER === 'anthropic') {
-      provider = process.env.GAUZ_LLM_PROVIDER;
-    } else if (apiUrl.includes('anthropic') || apiUrl.includes('claude') || model.includes('claude')) {
-      provider = 'anthropic';
+    let provider: SupportedProvider = 'openai';
+    if (envProvider === 'openai' || envProvider === 'anthropic' || envProvider === 'deepseek' || envProvider === 'minimax') {
+      provider = envProvider;
+    } else {
+      const apiUrlHint = (rawApiUrl || '').toLowerCase();
+      const modelHint = (rawModel || '').toLowerCase();
+      if (apiUrlHint.includes('anthropic') || apiUrlHint.includes('claude') || modelHint.includes('claude')) {
+        provider = 'anthropic';
+      } else if (apiUrlHint.includes('deepseek') || modelHint.includes('deepseek')) {
+        provider = 'deepseek';
+      } else if (apiUrlHint.includes('minimax') || apiUrlHint.includes('minimaxi') || modelHint.includes('minimax')) {
+        provider = 'minimax';
+      }
     }
+
+    const defaults = PROVIDER_DEFAULTS[provider];
+    const apiUrl = rawApiUrl || defaults.apiUrl;
+    const model = rawModel || defaults.model;
 
     return {
       apiUrl,

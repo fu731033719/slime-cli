@@ -63,18 +63,38 @@ async function runInteractiveChat(options: CommandOptions): Promise<void> {
     output: process.stdout,
     prompt: '> ',
   });
+  let pendingReply = false;
+  let exitAfterReply = false;
 
-  Logger.info('Interactive chat started. Use /exit to quit, /clear to reset history, /history to inspect messages.');
-  rl.prompt();
+  const finishSession = () => {
+    console.log('');
+    process.exit(0);
+  };
 
-  rl.on('line', async (line: string) => {
+  const promptNext = () => {
+    if (!exitAfterReply) {
+      rl.prompt();
+    }
+  };
+
+  const handleUserInput = async (line: string) => {
     const input = line.trim();
     if (!input) {
-      rl.prompt();
+      promptNext();
+      return;
+    }
+
+    if (pendingReply) {
+      Logger.warning('Still waiting for the previous reply. Please give it a second.');
+      promptNext();
       return;
     }
 
     if (input === '/exit' || input === 'exit' || input === 'quit') {
+      if (pendingReply) {
+        exitAfterReply = true;
+        return;
+      }
       rl.close();
       return;
     }
@@ -84,32 +104,55 @@ async function runInteractiveChat(options: CommandOptions): Promise<void> {
       messages.length = 0;
       messages.push(...preserved);
       Logger.info('Conversation history cleared.');
-      rl.prompt();
+      promptNext();
       return;
     }
 
     if (input === '/history') {
       const visible = messages.filter(message => message.role !== 'system');
       console.log(`\n${JSON.stringify(visible, null, 2)}\n`);
-      rl.prompt();
+      promptNext();
       return;
     }
+
+    pendingReply = true;
+    rl.pause();
+    Logger.startProgress('Waiting for Slime to reply...');
 
     try {
       messages.push({ role: 'user', content: input });
       const reply = await requestAssistantReply(aiService, messages);
       messages.push({ role: 'assistant', content: reply });
+      Logger.stopProgress();
       console.log(`\n${reply}\n`);
     } catch (error: any) {
-      Logger.error(`Chat failed: ${error.message}`);
+      Logger.stopProgress(false, `Chat failed: ${error.message}`);
+    } finally {
+      pendingReply = false;
+      rl.resume();
     }
 
-    rl.prompt();
+    if (exitAfterReply) {
+      rl.close();
+      return;
+    }
+
+    promptNext();
+  };
+
+  Logger.info('Interactive chat started. Use /exit to quit, /clear to reset history, /history to inspect messages.');
+  rl.prompt();
+
+  rl.on('line', (line: string) => {
+    void handleUserInput(line);
   });
 
   rl.on('close', () => {
-    console.log('');
-    process.exit(0);
+    if (pendingReply) {
+      exitAfterReply = true;
+      return;
+    }
+    finishSession();
   });
 }
 

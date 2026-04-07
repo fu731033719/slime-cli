@@ -2,7 +2,7 @@
 
 ## Goal
 
-Establish a minimal runtime baseline where Slime behaves like a message-native agent on social surfaces such as CatsCompany and Feishu.
+Establish a minimal runtime baseline where XiaoBa behaves like a message-native agent on social surfaces such as CatsCompany and Feishu.
 
 This baseline intentionally focuses on the message loop itself and avoids mixing in memory, summary, compression, or skill-loading complexity.
 
@@ -21,8 +21,8 @@ Long-term conversation history. This should remain message-native and provider-a
 Example:
 
 ```text
-user: 鏉ヨ繖閲?
-assistant: 濂界殑鑰佸笀锛屾垜鏉ヤ簡锛?
+user: 来这里
+assistant: 好的，我来了！
 ```
 
 Durable session should mirror the actual visible chat record, not runtime metadata.
@@ -34,8 +34,8 @@ Current-run execution trace used to continue reasoning inside the same run.
 For `reply`, the working trace must preserve the provider-native call/result shape:
 
 ```text
-assistant: tool_call reply("濂界殑鑰佸笀锛屾垜鏉ヤ簡锛?)
-tool: 娑堟伅宸插彂閫?
+assistant: tool_call reply("好的，我来了！")
+tool: 消息已发送
 ```
 
 Without this trace, the model only sees that it "said something", not that it already delivered the message, which creates duplicate-send fixed points.
@@ -104,4 +104,3 @@ This baseline does not attempt to solve:
 - sub-agent orchestration
 
 Those should be optimized separately after the message loop is stable.
-

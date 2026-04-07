@@ -17,11 +17,22 @@ export class OpenAIProvider implements AIProvider {
   private maxTokens: number;
 
   constructor(config: ChatConfig) {
-    this.apiUrl = config.apiUrl!;
+    this.apiUrl = this.normalizeApiUrl(config.apiUrl!);
     this.apiKey = config.apiKey!;
     this.model = config.model || 'gpt-4o';
     this.temperature = config.temperature ?? 0.7;
     this.maxTokens = config.maxTokens ?? 8192;
+  }
+
+  private normalizeApiUrl(apiUrl: string): string {
+    const trimmed = apiUrl.trim().replace(/\/+$/, '');
+    if (trimmed.endsWith('/chat/completions') || trimmed.endsWith('/v1/messages')) {
+      return trimmed;
+    }
+    if (trimmed.endsWith('/v1')) {
+      return `${trimmed}/chat/completions`;
+    }
+    return `${trimmed}/chat/completions`;
   }
 
   /**

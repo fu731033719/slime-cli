@@ -25,7 +25,7 @@ export interface ChatConfig {
   model?: string;
   temperature?: number;
   maxTokens?: number;
-  provider?: 'openai' | 'anthropic';
+  provider?: 'openai' | 'anthropic' | 'deepseek' | 'minimax';
   feishu?: {
     appId?: string;
     appSecret?: string;

@@ -10,6 +10,19 @@ export async function configCommand(): Promise<void> {
 
   const answers = await inquirer.prompt([
     {
+      type: 'list',
+      name: 'provider',
+      message: styles.text('Provider:'),
+      choices: [
+        { name: 'OpenAI', value: 'openai' },
+        { name: 'Anthropic', value: 'anthropic' },
+        { name: 'DeepSeek', value: 'deepseek' },
+        { name: 'MiniMax', value: 'minimax' },
+      ],
+      default: currentConfig.provider || 'openai',
+      prefix: styles.highlight('?'),
+    },
+    {
       type: 'input',
       name: 'apiUrl',
       message: styles.text('API鍦板潃:'),
@@ -40,6 +53,7 @@ export async function configCommand(): Promise<void> {
   ]);
 
   const finalConfig = {
+    provider: answers.provider,
     apiUrl: answers.apiUrl,
     apiKey: answers.apiKey,
     model: answers.model,

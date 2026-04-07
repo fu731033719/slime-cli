@@ -5,7 +5,7 @@ import { AnthropicProvider } from '../providers/anthropic-provider';
 import { OpenAIProvider } from '../providers/openai-provider';
 import { ConfigManager } from './config';
 
-type ProviderKind = 'openai' | 'anthropic';
+type ProviderKind = 'openai' | 'anthropic' | 'deepseek' | 'minimax';
 
 export class AIService {
   private readonly config: ChatConfig;
@@ -56,7 +56,12 @@ export class AIService {
   }
 
   private resolveProvider(config: Partial<ChatConfig>): ProviderKind {
-    if (config.provider === 'anthropic' || config.provider === 'openai') {
+    if (
+      config.provider === 'anthropic' ||
+      config.provider === 'openai' ||
+      config.provider === 'deepseek' ||
+      config.provider === 'minimax'
+    ) {
       return config.provider;
     }
 
@@ -65,16 +70,38 @@ export class AIService {
     if (apiUrl.includes('anthropic') || apiUrl.includes('claude') || model.includes('claude')) {
       return 'anthropic';
     }
+    if (apiUrl.includes('deepseek') || model.includes('deepseek')) {
+      return 'deepseek';
+    }
+    if (apiUrl.includes('minimax') || apiUrl.includes('minimaxi') || model.includes('minimax')) {
+      return 'minimax';
+    }
     return 'openai';
   }
 
   private defaultApiUrl(provider: ProviderKind): string {
-    return provider === 'anthropic'
-      ? 'https://api.anthropic.com/v1/messages'
-      : 'https://api.openai.com/v1/chat/completions';
+    switch (provider) {
+      case 'anthropic':
+        return 'https://api.anthropic.com/v1/messages';
+      case 'deepseek':
+        return 'https://api.deepseek.com/v1';
+      case 'minimax':
+        return 'https://api.minimaxi.com/v1';
+      default:
+        return 'https://api.openai.com/v1/chat/completions';
+    }
   }
 
   private defaultModel(provider: ProviderKind): string {
-    return provider === 'anthropic' ? 'claude-3-5-sonnet-latest' : 'gpt-4o-mini';
+    switch (provider) {
+      case 'anthropic':
+        return 'claude-3-5-sonnet-latest';
+      case 'deepseek':
+        return 'deepseek-chat';
+      case 'minimax':
+        return 'MiniMax-M2.7';
+      default:
+        return 'gpt-4o-mini';
+    }
   }
 }
