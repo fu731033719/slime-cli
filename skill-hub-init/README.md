@@ -1,115 +1,114 @@
 ﻿# Slime Skill Hub
 
-Slime 瀹樻柟 Skill 鍟嗗簵绱㈠紩浠撳簱銆?
+Slime 官方 Skill 商店索引仓库。
 
-## 浠€涔堟槸 Skill Hub锛?
+## 什么是 Skill Hub？
 
-Skill Hub 鏄?Slime 鐨勮兘鍔涙墿灞曞競鍦恒€傚紑鍙戣€呭彲浠ュ皢鑷繁寮€鍙戠殑 Skill 鍙戝竷鍒拌繖閲岋紝璁╂墍鏈?Slime 鐢ㄦ埛閮借兘閫氳繃 Dashboard 涓€閿畨瑁呫€?
+Skill Hub 是 Slime 的能力扩展市场。开发者可以将自己开发的 Skill 发布到这里，让所有 Slime 用户都能通过 Dashboard 一键安装。
 
-## 鏋舵瀯璁捐
+## 架构设计
 
-- **鍘讳腑蹇冨寲**锛歋kill 浠ｇ爜鎵樼鍦ㄥ紑鍙戣€呰嚜宸辩殑 GitHub 浠撳簱
-- **杞婚噺绾х储寮?*锛氭湰浠撳簱鍙淮鎶?`registry.json` 绱㈠紩鏂囦欢
-- **绀惧尯椹卞姩**锛氫换浣曚汉閮藉彲浠ラ€氳繃 PR 璐＄尞鏂?Skill
+- **去中心化**：Skill 代码托管在开发者自己的 GitHub 仓库
+- **轻量级索引**：本仓库只维护 `registry.json` 索引文件
+- **社区驱动**：任何人都可以通过 PR 贡献新 Skill
 
-## 濡備綍鍙戝竷 Skill锛?
+## 如何发布 Skill？
 
-### 鏂规硶 1锛氫娇鐢?skill-publish锛堟帹鑽愶級
+### 方法 1：使用 skill-publish（推荐）
 
-Slime 鍐呯疆浜?`skill-publish` skill锛屽彲浠ヨ嚜鍔ㄥ畬鎴愭暣涓彂甯冩祦绋嬶細
+Slime 内置了 `skill-publish` skill，可以自动完成整个发布流程：
 
 ```bash
-# 鍦?Slime 涓墽琛?
-/skill-publish <浣犵殑skill鍚嶇О>
+# 在 Slime 中执行
+/skill-publish <你的skill名称>
 ```
 
-瀹冧細鑷姩锛?
-1. 鍦ㄤ綘鐨?GitHub 鍒涘缓 `slime-skill-<name>` 浠撳簱
-2. 鎺ㄩ€?skill 浠ｇ爜
-3. Fork 鏈粨搴?
-4. 鏇存柊 registry.json
-5. 鎻愪氦 PR
+它会自动：
+1. 在你的 GitHub 创建 `Slime-skill-<name>` 仓库
+2. 推送 skill 代码
+3. Fork 本仓库
+4. 更新 registry.json
+5. 提交 PR
 
-### 鏂规硶 2锛氭墜鍔ㄥ彂甯?
+### 方法 2：手动发布
 
-1. **鍒涘缓 Skill 浠撳簱**
-   - 鍦?GitHub 鍒涘缓鍏紑浠撳簱锛堝缓璁懡鍚嶏細`slime-skill-<name>`锛?
-   - 鎺ㄩ€佷綘鐨?skill 浠ｇ爜锛堝繀椤诲寘鍚?`SKILL.md`锛?
+1. **创建 Skill 仓库**
+   - 在 GitHub 创建公开仓库（建议命名：`Slime-skill-<name>`）
+   - 推送你的 skill 代码（必须包含 `SKILL.md`）
 
-2. **Fork 鏈粨搴?*
+2. **Fork 本仓库**
 
-3. **缂栬緫 registry.json**
+3. **编辑 registry.json**
 
-   娣诲姞浣犵殑 skill 鏉＄洰锛?
+   添加你的 skill 条目：
    ```json
    {
      "name": "your-skill-name",
-     "description": "绠€鐭弿杩颁綘鐨?skill 鍔熻兘",
-     "category": "宸ュ叿",
+     "description": "简短描述你的 skill 功能",
+     "category": "工具",
      "recommended": false,
-     "repo": "https://github.com/your-username/slime-skill-your-skill-name"
+     "repo": "https://github.com/your-username/Slime-skill-your-skill-name"
    }
    ```
 
-4. **鎻愪氦 PR**
+4. **提交 PR**
 
-   PR 鏍囬锛歚Add skill: <skill-name>`
+   PR 标题：`Add skill: <skill-name>`
 
-## Registry 瀛楁璇存槑
+## Registry 字段说明
 
-| 瀛楁 | 绫诲瀷 | 璇存槑 |
+| 字段 | 类型 | 说明 |
 |------|------|------|
-| `name` | string | Skill 鍚嶇О锛堝繀椤讳笌 SKILL.md 涓殑 name 涓€鑷达級 |
-| `description` | string | 绠€鐭弿杩帮紙寤鸿 50 瀛椾互鍐咃級 |
-| `category` | string | 鍒嗙被锛氭牳蹇冦€佸伐鍏枫€佹晥鐜囥€佺鐮斻€佽繍缁淬€佸叾浠?|
-| `recommended` | boolean | 鏄惁鎺ㄨ崘锛堢敱缁存姢鑰呭喅瀹氾級 |
-| `repo` | string | GitHub 浠撳簱鍦板潃锛堝畬鏁?URL锛?|
+| `name` | string | Skill 名称（必须与 SKILL.md 中的 name 一致） |
+| `description` | string | 简短描述（建议 50 字以内） |
+| `category` | string | 分类：核心、工具、效率、科研、运维、其他 |
+| `recommended` | boolean | 是否推荐（由维护者决定） |
+| `repo` | string | GitHub 仓库地址（完整 URL） |
 
-## Skill 寮€鍙戣鑼?
+## Skill 开发规范
 
-### 蹇呴渶鏂囦欢
+### 必需文件
 
-- `SKILL.md`锛歋kill 鍏冩暟鎹拰浣跨敤璇存槑
+- `SKILL.md`：Skill 元数据和使用说明
 
-### 鍙€夋枃浠?
+### 可选文件
 
-- `requirements.txt`锛歅ython 渚濊禆
-- `*.py`锛歅ython 宸ュ叿鑴氭湰
-- `*.ts` / `*.js`锛歍ypeScript/JavaScript 宸ュ叿
+- `requirements.txt`：Python 依赖
+- `*.py`：Python 工具脚本
+- `*.ts` / `*.js`：TypeScript/JavaScript 工具
 
-### SKILL.md 鏍煎紡
+### SKILL.md 格式
 
 ```markdown
 ---
 name: your-skill-name
-description: "绠€鐭弿杩?
+description: "简短描述"
 invocable: user
 autoInvocable: false
-argument-hint: "<鍙傛暟鎻愮ず>"
+argument-hint: "<参数提示>"
 max-turns: 20
 ---
 
-# Skill 鍚嶇О
+# Skill 名称
 
-璇︾粏璇存槑...
+详细说明...
 ```
 
-## 瀹℃牳鏍囧噯
+## 审核标准
 
-PR 浼氭牴鎹互涓嬫爣鍑嗗鏍革細
+PR 会根据以下标准审核：
 
-- 鉁?SKILL.md 鏍煎紡姝ｇ‘
-- 鉁?鍔熻兘鎻忚堪娓呮櫚
-- 鉁?浠ｇ爜璐ㄩ噺鑹ソ
-- 鉁?鏃犳伓鎰忎唬鐮?
-- 鉁?鏃犻噸澶嶅姛鑳?
+- ✅ SKILL.md 格式正确
+- ✅ 功能描述清晰
+- ✅ 代码质量良好
+- ✅ 无恶意代码
+- ✅ 无重复功能
 
-## 绀惧尯
+## 社区
 
-- 闂鍙嶉锛歔Issues](https://github.com/buildsense-ai/Slime-Skill-Hub/issues)
-- 璁ㄨ浜ゆ祦锛歔Discussions](https://github.com/buildsense-ai/Slime-Skill-Hub/discussions)
+- 问题反馈：[Issues](https://github.com/buildsense-ai/Slime-Skill-Hub/issues)
+- 讨论交流：[Discussions](https://github.com/buildsense-ai/Slime-Skill-Hub/discussions)
 
 ## License
 
 MIT
-

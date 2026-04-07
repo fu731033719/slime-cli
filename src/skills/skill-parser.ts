@@ -3,25 +3,25 @@ import matter from 'gray-matter';
 import { Skill, SkillMetadata } from '../types/skill';
 
 /**
- * Skill 瑙ｆ瀽鍣?
+ * Skill 解析器
  */
 export class SkillParser {
   /**
-   * 瑙ｆ瀽 SKILL.md 鏂囦欢锛堟敮鎸佸绉嶆牸寮忥級
-   * @param filePath - SKILL.md 鏂囦欢璺緞
-   * @returns Skill 瀵硅薄
+   * 解析 SKILL.md 文件（支持多种格式）
+   * @param filePath - SKILL.md 文件路径
+   * @returns Skill 对象
    */
   static parse(filePath: string): Skill {
     try {
       const fileContent = fs.readFileSync(filePath, 'utf-8');
       const { data, content } = matter(fileContent);
 
-      // 妫€娴嬫牸寮忕被鍨嬪苟瑙ｆ瀽
+      // 检测格式类型并解析
       if (this.isClaudeCodeFormat(data)) {
         return this.parseClaudeCodeFormat(filePath, data, content);
       }
 
-      // 默认使用 Slime 格式
+      // 默认使用 slime 格式
       return this.parseSlimeFormat(filePath, data, content);
     } catch (error: any) {
       throw new Error(`Failed to parse skill file ${filePath}: ${error.message}`);
@@ -29,14 +29,14 @@ export class SkillParser {
   }
 
   /**
-   * 妫€娴嬫槸鍚︿负 Claude Code 鏍煎紡
+   * 检测是否为 Claude Code 格式
    */
   private static isClaudeCodeFormat(data: any): boolean {
     return !!(data.invocable || data.autoInvocable !== undefined);
   }
 
   /**
-   * 瑙ｆ瀽 Claude Code 鏍煎紡
+   * 解析 Claude Code 格式
    */
   private static parseClaudeCodeFormat(filePath: string, data: any, content: string): Skill {
     if (!data.name || !data.description) {
@@ -92,10 +92,9 @@ export class SkillParser {
   }
 
   /**
-   * 楠岃瘉 Skill 鍏冩暟鎹?
+   * 验证 Skill 元数据
    */
   static validate(metadata: SkillMetadata): boolean {
     return !!(metadata.name && metadata.description);
   }
 }
-

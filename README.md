@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/banner.png" alt="XiaoBa Banner" width="100%">
+  <img src="assets/banner.png" alt="Slime Banner" width="100%">
 
   # 👾 Slime - 勇者最佳的 AI Agent
 

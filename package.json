@@ -1,7 +1,7 @@
 ﻿{
   "name": "slime-cli",
   "version": "0.1.0",
-  "description": "Slime - 涓€涓櫤鑳界殑AI瀵硅瘽鍔╂墜CLI宸ュ叿",
+  "description": "Slime - Cli",
   "main": "electron/main.js",
   "bin": {
     "slime": "dist/index.js"

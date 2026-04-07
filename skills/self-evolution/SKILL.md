@@ -1,111 +1,110 @@
 ﻿---
 name: self-evolution
-description: 鑷垜杩涘寲锛氬紩瀵煎垱寤烘柊鐨?skill 鎴?Python tool锛屾墿灞?Slime 鐨勮兘鍔涜竟鐣屻€?
+description: 史莱姆自我塑造：引导创建新的 skill 或 Python tool，扩展 Slime 的能力边界。
 invocable: both
-argument-hint: "<'skill' 鎴?'tool'> <绠€瑕佹弿杩版兂瑕佺殑鍔熻兘>"
+argument-hint: "<'skill' 或 'tool'> <简要描述想要的功能>"
 max-turns: 30
 ---
 
-# 鑷垜杩涘寲锛圫elf Evolution锛?
+# 自我进化（Self Evolution）
 
-浣犳槸 Slime 鐨勮嚜鎴戣繘鍖栧紩鎿庛€傜敤鎴凤紙鎴栫郴缁燂級瑙﹀彂姝?skill 鏃讹紝浣犵殑浠诲姟鏄紩瀵煎畬鎴愪竴涓柊 skill 鎴?Python tool 鐨勮璁′笌鍒涘缓銆?
+你是 Slime 的自我进化引擎。用户（或系统）触发此 skill 时，你的任务是引导完成一个新 skill 或 Python tool 的设计与创建。
 
-## 纭鍒?
+## 硬规则
 
-- Skill 浜у嚭浣嶇疆锛歚skills/<name>/SKILL.md`
-- Tool 浜у嚭浣嶇疆锛氭斁鍦ㄥ搴?skill 鐩綍涓?`skills/<skill-name>/<name>_tool.py`锛屼繚鎸?skill 鑷寘鍚?
-- 閫氳繃宸叉湁宸ュ叿鍒涘缓鐩綍鍜屽啓鍏ユ枃浠?
-- 鍛藉悕瑙勮寖锛氬彧鍏佽灏忓啓瀛楁瘝銆佹暟瀛椼€佷笅鍒掔嚎銆佽繛瀛楃锛坄^[a-zA-Z0-9_-]+$`锛?
-- 涓嶈鍒涘缓涓庡凡鏈?skill/tool 鍚屽悕鐨勫唴瀹?
+- Skill 产出位置：`skills/<name>/SKILL.md`
+- Tool 产出位置：放在对应 skill 目录下 `skills/<skill-name>/<name>_tool.py`，保持 skill 自包含
+- 通过已有工具创建目录和写入文件
+- 命名规范：只允许小写字母、数字、下划线、连字符（`^[a-zA-Z0-9_-]+$`）
+- 不要创建与已有 skill/tool 同名的内容
 
-## 鎵ц娴佺▼
+## 执行流程
 
-### Step 1锛氭槑纭渶姹?
+### Step 1：明确需求
 
-鏍规嵁鐢ㄦ埛杈撳叆锛岀‘璁や互涓嬩俊鎭細
+根据用户输入，确认以下信息：
 
-- **绫诲瀷**锛氬垱寤?skill 杩樻槸 tool锛?
-  - Skill = 楂樺眰宸ヤ綔娴?鎻愮ず璇嶆ā鏉匡紙Markdown锛夛紝瀹氫箟"鎬庝箞鍋氫竴浠朵簨"
-  - Tool = 搴曞眰鍙墽琛屽嚱鏁帮紙Python锛夛紝鎻愪緵鍏蜂綋鑳藉姏
-- **鍚嶇О**锛氱畝娲併€佽涔夋竻鏅?
-- **鏍稿績鍔熻兘**锛氫竴鍙ヨ瘽鎻忚堪瀹冨仛浠€涔?
+- **类型**：创建 skill 还是 tool？
+  - Skill = 高层工作流/提示词模板（Markdown），定义"怎么做一件事"
+  - Tool = 底层可执行函数（Python），提供具体能力
+- **名称**：简洁、语义清晰
+- **核心功能**：一句话描述它做什么
 
-濡傛灉鐢ㄦ埛鎻忚堪妯＄硦锛屽悜鐢ㄦ埛杩介棶銆備笉瑕佺寽娴嬨€?
+如果用户描述模糊，向用户追问。不要猜测。
 
-### Step 2锛氳璁℃柟妗?
+### Step 2：设计方案
 
-#### 濡傛灉鏄?Skill
+#### 如果是 Skill
 
-璁捐浠ヤ笅鍐呭锛?
+设计以下内容：
 
-- `description`锛氫竴鍙ヨ瘽鎻忚堪
-- `invocable`锛歚user`锛堢敤鎴锋墜鍔ㄨ皟鐢級/ `auto`锛堣嚜鍔ㄥ尮閰嶈Е鍙戯級/ `both`
-- `argument-hint`锛氬弬鏁版彁绀猴紙鍙€夛級
-- `max-turns`锛氭渶澶у璇濊疆鏁帮紙鏍规嵁澶嶆潅搴︿及绠楋級
-- prompt 鍐呭锛氬畬鏁寸殑 skill 鎻愮ず璇嶏紝鍖呮嫭锛?
-  - 鏍稿績鐞嗗康 / 瑙掕壊瀹氫綅
-  - 纭鍒欙紙Non-Negotiables锛?
-  - 鍒嗘鎵ц娴佺▼
-  - 杈撳嚭鏍煎紡瑕佹眰
+- `description`：一句话描述
+- `invocable`：`user`（用户手动调用）/ `auto`（自动匹配触发）/ `both`
+- `argument-hint`：参数提示（可选）
+- `max-turns`：最大对话轮数（根据复杂度估算）
+- prompt 内容：完整的 skill 提示词，包括：
+  - 核心理念 / 角色定位
+  - 硬规则（Non-Negotiables）
+  - 分步执行流程
+  - 输出格式要求
 
-#### 濡傛灉鏄?Tool
+#### 如果是 Tool
 
-璁捐浠ヤ笅鍐呭锛?
+设计以下内容：
 
-- 鑴氭湰鍚嶇О锛坰nake_case锛?
-- 鑴氭湰鍔熻兘鎻忚堪
-- 杈撳叆鍙傛暟
-- Python 鑴氭湰锛氱嫭绔嬪彲鎵ц锛岄€氳繃 `execute_shell` 璋冪敤
+- 脚本名称（snake_case）
+- 脚本功能描述
+- 输入参数
+- Python 脚本：独立可执行，通过 `execute_shell` 调用
 
-Tool 鏍囧噯妯℃澘锛?
+Tool 标准模板：
 
 ```python
 #!/usr/bin/env python3
-"""<宸ュ叿鎻忚堪>"""
+"""<工具描述>"""
 import sys
 import json
 
 def main():
-    # 浠?stdin 璇诲彇鍙傛暟锛堝鏋滈渶瑕侊級
+    # 从 stdin 读取参数（如果需要）
     # params = json.loads(sys.stdin.read())
 
-    # 瀹炵幇閫昏緫
-    result = {"status": "success", "message": "瀹屾垚"}
+    # 实现逻辑
+    result = {"status": "success", "message": "完成"}
 
-    # 杈撳嚭缁撴灉鍒?stdout
+    # 输出结果到 stdout
     print(json.dumps(result, ensure_ascii=False))
 
 if __name__ == "__main__":
     main()
 ```
 
-璋冪敤鏂瑰紡锛氶€氳繃 `execute_shell` 鎵ц鑴氭湰锛屼緥濡傦細
+调用方式：通过 `execute_shell` 执行脚本，例如：
 ```bash
 python skills/<skill-name>/<script_name>.py
 ```
 
-### Step 3锛氬悜鐢ㄦ埛纭鏂规
+### Step 3：向用户确认方案
 
-灏嗚璁℃柟妗堢畝瑕佸睍绀虹粰鐢ㄦ埛锛岀瓑寰呯‘璁ゃ€傚鏋滅敤鎴疯姹備慨鏀癸紝鍥炲埌 Step 2 璋冩暣銆?
+将设计方案简要展示给用户，等待确认。如果用户要求修改，回到 Step 2 调整。
 
-### Step 4锛氭墽琛屽垱寤?
+### Step 4：执行创建
 
-鍒涘缓鐩綍銆佸啓鍏ユ枃浠讹細
+创建目录、写入文件：
 
-- **鍒涘缓 Skill**锛氬垱寤?`skills/<name>/` 鐩綍锛屽啓鍏?`SKILL.md`锛堝惈 YAML frontmatter + prompt 鍐呭锛夈€?
-- **鍒涘缓 Tool**锛氬皢瀹屾暣 Python 浠ｇ爜鍐欏叆 `skills/<skill-name>/<tool_name>_tool.py`銆?
+- **创建 Skill**：创建 `skills/<name>/` 目录，写入 `SKILL.md`（含 YAML frontmatter + prompt 内容）。
+- **创建 Tool**：将完整 Python 代码写入 `skills/<skill-name>/<tool_name>_tool.py`。
 
-### Step 5锛氶獙璇?
+### Step 5：验证
 
-鍒涘缓瀹屾垚鍚庯細
+创建完成后：
 
-1. 纭鏂囦欢宸茬敓鎴愬湪姝ｇ‘浣嶇疆
-2. 濡傛灉鏄?tool锛岃繍琛屼竴娆＄‘璁ゆ棤璇硶閿欒
-3. 鍚戠敤鎴锋姤鍛婄粨鏋滐紝璇存槑濡備綍浣跨敤鏂板垱寤虹殑 skill/tool
+1. 确认文件已生成在正确位置
+2. 如果是 tool，运行一次确认无语法错误
+3. 向用户报告结果，说明如何使用新创建的 skill/tool
 
-## 娉ㄦ剰浜嬮」
+## 注意事项
 
-- 鐢熸垚鐨?Python tool 浠ｇ爜蹇呴』鑳界嫭绔嬭繍琛岋紙stdin JSON 鈫?stdout JSON锛?
-- Skill 鐨?prompt 瑕佽冻澶熻缁嗭紝璁?Slime 鑳界嫭绔嬫墽琛岋紝涓嶄緷璧栧垱寤鸿€呯殑闅愬惈鐭ヨ瘑
-- 濡傛灉鏂?tool 闇€瑕佺涓夋柟搴擄紝鎻愰啋鐢ㄦ埛鍏?`pip install`
-
+- 生成的 Python tool 代码必须能独立运行（stdin JSON → stdout JSON）
+- Skill 的 prompt 要足够详细，让 Slime 能独立执行，不依赖创建者的隐含知识
+- 如果新 tool 需要第三方库，提醒用户先 `pip install`

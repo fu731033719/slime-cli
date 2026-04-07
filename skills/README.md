@@ -1,99 +1,98 @@
-﻿# Skills 鐩綍璇存槑
+﻿# Skills 目录说明
 
-## 缁熶竴鐨?Skill 绠＄悊
+## 统一的 Skill 管理
 
-鎵€鏈?Skills 缁熶竴瀛樻斁鍦ㄩ」鐩牴鐩綍鐨?`skills/` 鏂囦欢澶逛腑銆?
+所有 Skills 统一存放在项目根目录的 `skills/` 文件夹中。
 
-## 鐩綍缁撴瀯
+## 目录结构
 
 ```
 skills/
-鈹溾攢鈹€ paper-analysis/
-鈹?  鈹斺攢鈹€ SKILL.md
-鈹溾攢鈹€ sci-paper-writing/
-鈹?  鈹斺攢鈹€ SKILL.md
-鈹溾攢鈹€ xhs-vibe-write/
-鈹?  鈹斺攢鈹€ SKILL.md
-鈹斺攢鈹€ your-custom-skill/
-    鈹斺攢鈹€ SKILL.md
+├── paper-analysis/
+│   └── SKILL.md
+├── sci-paper-writing/
+│   └── SKILL.md
+├── xhs-vibe-write/
+│   └── SKILL.md
+└── your-custom-skill/
+    └── SKILL.md
 ```
 
-## Skill 鍛戒护
+## Skill 命令
 
-### 鏌ョ湅鎵€鏈夊彲鐢ㄧ殑 Skills
+### 查看所有可用的 Skills
 
 ```bash
 slime skill list
 ```
 
-### 浠?GitHub 瀹夎 Skill
+### 从 GitHub 安装 Skill
 
 ```bash
 slime skill install-github owner/repo
 ```
 
-绀轰緥锛?
+示例：
 ```bash
 slime skill install-github obra/superpowers
 ```
 
-Skill 浼氳鍏嬮殕鍒?`skills/` 鐩綍銆?
+Skill 会被克隆到 `skills/` 目录。
 
-### 鏌ョ湅 Skill 璇︽儏
+### 查看 Skill 详情
 
 ```bash
 slime skill info <skill-name>
 ```
 
-### 鍒犻櫎 Skill
+### 删除 Skill
 
 ```bash
 slime skill remove <skill-name>
 ```
 
-寮哄埗鍒犻櫎锛堜笉璇㈤棶锛夛細
+强制删除（不询问）：
 ```bash
 slime skill remove <skill-name> -f
 ```
 
-## 鎵嬪姩娣诲姞 Skill
+## 手动添加 Skill
 
-鐩存帴鍦?`skills/` 鐩綍涓嬪垱寤烘枃浠跺す锛屾瘡涓?Skill 鍖呭惈涓€涓?`SKILL.md` 鏂囦欢锛?
+直接在 `skills/` 目录下创建文件夹，每个 Skill 包含一个 `SKILL.md` 文件：
 
 ```
 skills/
-鈹斺攢鈹€ my-custom-skill/
-    鈹斺攢鈹€ SKILL.md
+└── my-custom-skill/
+    └── SKILL.md
 ```
 
-### SKILL.md 鏍煎紡
+### SKILL.md 格式
 
 ```markdown
 ---
 name: my-custom-skill
-description: 鎴戠殑鑷畾涔?Skill
+description: 我的自定义 Skill
 invocable: user
 ---
 
-# Skill 鍐呭
+# Skill 内容
 
-鍦ㄨ繖閲岀紪鍐?Skill 鐨勫叿浣撴寚浠?..
+在这里编写 Skill 的具体指令...
 ```
 
-## 娉ㄦ剰浜嬮」
+## 注意事项
 
-- 鉁?鎵€鏈?Skills 缁熶竴鍦?`skills/` 鐩綍
-- 鉁?姣忎釜 Skill 涓€涓嫭绔嬫枃浠跺す
-- 鉁?蹇呴』鍖呭惈 `SKILL.md` 鏂囦欢
-- 鉁?鏀寔浠?GitHub 鐩存帴瀹夎
-- 鉂?涓嶅啀鏀寔澶氱骇鐩綍锛坣pm銆佺敤鎴风骇銆侀」鐩骇绛夊鏉傜粨鏋勶級
+- ✅ 所有 Skills 统一在 `skills/` 目录
+- ✅ 每个 Skill 一个独立文件夹
+- ✅ 必须包含 `SKILL.md` 文件
+- ✅ 支持从 GitHub 直接安装
+- ❌ 不再支持多级目录（npm、用户级、项目级等复杂结构）
 
-## 杩佺Щ鐜版湁 Skills
+## 迁移现有 Skills
 
-濡傛灉浣犱箣鍓嶇殑 Skills 鍦ㄥ叾浠栦綅缃紙濡?`.slime/skills/` 鎴?`~/.slime/skills/`锛夛紝璇锋墜鍔ㄧЩ鍔ㄥ埌 `skills/` 鐩綍锛?
+如果你之前的 Skills 在其他位置（如 `.slime/skills/` 或 `~/.slime/skills/`），请手动移动到 `skills/` 目录：
 
 ```bash
-# 绀轰緥锛氳縼绉?.slime/skills/ 涓殑 Skills
+# 示例：迁移 .slime/skills/ 中的 Skills
 mv .slime/skills/* skills/
 ```
-
