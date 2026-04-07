@@ -5,6 +5,22 @@ import { CommandOptions, Message } from '../types';
 import { SkillManager } from '../skills/skill-manager';
 import { PromptManager } from '../utils/prompt-manager';
 
+const LOADING_MESSAGES = [
+  'Slime is sleeping',
+  'Slime is working hard',
+  'Slime is trying to transform',
+  'Slime is wobbling through your request',
+  'Slime is brewing a gooey answer',
+  'Slime is gathering sticky thoughts',
+  'Slime is bubbling up a reply',
+  'Slime is reshaping some ideas',
+];
+
+function getRandomLoadingMessage(): string {
+  const index = Math.floor(Math.random() * LOADING_MESSAGES.length);
+  return LOADING_MESSAGES[index];
+}
+
 async function buildInitialMessages(skillName?: string): Promise<Message[]> {
   const messages: Message[] = [];
   const systemPrompt = await PromptManager.buildSystemPrompt();
@@ -117,7 +133,7 @@ async function runInteractiveChat(options: CommandOptions): Promise<void> {
 
     pendingReply = true;
     rl.pause();
-    Logger.startProgress('Waiting for Slime to reply...');
+    Logger.startProgress(getRandomLoadingMessage());
 
     try {
       messages.push({ role: 'user', content: input });

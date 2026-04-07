@@ -1,14 +1,9 @@
 import axios from 'axios';
-import { Message, ChatConfig, ChatResponse, ContentBlock } from '../types';
+import { Message, ChatConfig, ChatResponse } from '../types';
 import { ToolDefinition } from '../types/tool';
 import { AIProvider, StreamCallbacks } from './provider';
 import { ContextDebugLogger } from '../utils/context-debug-logger';
 
-/**
- * OpenAI Provider
- * 兼容所有 OpenAI API 格式的服务（OpenAI、本地 LLM 等）
- * 支持 SSE streaming
- */
 export class OpenAIProvider implements AIProvider {
   private apiUrl: string;
   private apiKey: string;
@@ -35,9 +30,6 @@ export class OpenAIProvider implements AIProvider {
     return `${trimmed}/chat/completions`;
   }
 
-  /**
-   * 构建请求体
-   */
   private buildRequestBody(messages: Message[], tools?: ToolDefinition[], stream = false): any {
     const sanitizedMessages = messages.map(message => {
       if (Array.isArray(message.content)) {
@@ -47,7 +39,7 @@ export class OpenAIProvider implements AIProvider {
             block.type === 'text'
               ? { type: 'text', text: block.text }
               : { type: 'image_url', image_url: { url: `data:${block.source.media_type};base64,${block.source.data}` } }
-          )
+          ),
         };
       }
       return { ...message, content: message.content ?? '' };
@@ -71,56 +63,91 @@ export class OpenAIProvider implements AIProvider {
         function: {
           name: tool.name,
           description: tool.description,
-          parameters: tool.parameters
-        }
+          parameters: tool.parameters,
+        },
       }));
     }
 
     return body;
   }
 
-  /**
-   * 构建请求头
-   */
+  private extractTextContent(content: unknown): string {
+    if (typeof content === 'string') {
+      return content;
+    }
+
+    if (Array.isArray(content)) {
+      return content
+        .map(item => {
+          if (typeof item === 'string') {
+            return item;
+          }
+
+          if (item && typeof item === 'object' && 'text' in item) {
+            const text = (item as { text?: unknown }).text;
+            return typeof text === 'string' ? text : '';
+          }
+
+          return '';
+        })
+        .filter(Boolean)
+        .join('');
+    }
+
+    return '';
+  }
+
+  private sanitizeVisibleContent(content: unknown, reasoningContent?: unknown): string {
+    let text = this.extractTextContent(content);
+
+    if (!text && typeof reasoningContent === 'string') {
+      return '';
+    }
+
+    return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  }
+
   private get headers() {
     return {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.apiKey}`,
+      Authorization: `Bearer ${this.apiKey}`,
     };
   }
 
-  /**
-   * 普通调用
-   */
   async chat(messages: Message[], tools?: ToolDefinition[]): Promise<ChatResponse> {
     const body = this.buildRequestBody(messages, tools, false);
     ContextDebugLogger.dumpSdkBoundary('before', undefined, {
       apiUrl: this.apiUrl,
       body,
     });
+
     const response = await axios.post(this.apiUrl, body, { headers: this.headers });
     const message = response.data.choices[0].message;
     const usage = response.data.usage;
+    const visibleContent = this.sanitizeVisibleContent(message.content, message.reasoning_content);
 
     ContextDebugLogger.dumpSdkBoundary('after', undefined, {
       response: response.data,
     });
 
     return {
-      content: message.content || null,
+      content: visibleContent || null,
       toolCalls: message.tool_calls,
-      usage: usage ? {
-        promptTokens: usage.prompt_tokens ?? 0,
-        completionTokens: usage.completion_tokens ?? 0,
-        totalTokens: usage.total_tokens ?? 0,
-      } : undefined,
+      usage: usage
+        ? {
+            promptTokens: usage.prompt_tokens ?? 0,
+            completionTokens: usage.completion_tokens ?? 0,
+            totalTokens: usage.total_tokens ?? 0,
+          }
+        : undefined,
     };
   }
 
-  /**
-   * 流式调用（SSE）
-   */
-  async chatStream(messages: Message[], tools?: ToolDefinition[], callbacks?: StreamCallbacks): Promise<ChatResponse> {
+  async chatStream(
+    messages: Message[],
+    tools?: ToolDefinition[],
+    callbacks?: StreamCallbacks,
+  ): Promise<ChatResponse> {
     const body = this.buildRequestBody(messages, tools, true);
 
     ContextDebugLogger.dumpSdkBoundary('before', undefined, {
@@ -148,15 +175,18 @@ export class OpenAIProvider implements AIProvider {
 
         for (const line of lines) {
           const trimmed = line.trim();
-          if (!trimmed || !trimmed.startsWith('data: ')) continue;
+          if (!trimmed || !trimmed.startsWith('data: ')) {
+            continue;
+          }
 
           const data = trimmed.slice(6);
-          if (data === '[DONE]') continue;
+          if (data === '[DONE]') {
+            continue;
+          }
 
           try {
             const parsed = JSON.parse(data);
 
-            // 提取 usage（stream_options.include_usage 时在最后一个 chunk 返回）
             if (parsed.usage) {
               streamUsage = {
                 promptTokens: parsed.usage.prompt_tokens ?? 0,
@@ -166,15 +196,16 @@ export class OpenAIProvider implements AIProvider {
             }
 
             const delta = parsed.choices?.[0]?.delta;
-            if (!delta) continue;
-
-            // 文本内容
-            if (delta.content) {
-              fullContent += delta.content;
-              callbacks?.onText?.(delta.content);
+            if (!delta) {
+              continue;
             }
 
-            // 工具调用（增量拼接）
+            const visibleChunk = this.sanitizeVisibleContent(delta.content, delta.reasoning_content);
+            if (visibleChunk) {
+              fullContent += visibleChunk;
+              callbacks?.onText?.(visibleChunk);
+            }
+
             if (delta.tool_calls) {
               for (const tc of delta.tool_calls) {
                 const idx = tc.index ?? 0;
@@ -182,25 +213,30 @@ export class OpenAIProvider implements AIProvider {
                   toolCallsMap.set(idx, {
                     id: tc.id || '',
                     type: 'function',
-                    function: { name: '', arguments: '' }
+                    function: { name: '', arguments: '' },
                   });
                 }
+
                 const existing = toolCallsMap.get(idx)!;
-                if (tc.id) existing.id = tc.id;
-                if (tc.function?.name) existing.function.name += tc.function.name;
-                if (tc.function?.arguments) existing.function.arguments += tc.function.arguments;
+                if (tc.id) {
+                  existing.id = tc.id;
+                }
+                if (tc.function?.name) {
+                  existing.function.name += tc.function.name;
+                }
+                if (tc.function?.arguments) {
+                  existing.function.arguments += tc.function.arguments;
+                }
               }
             }
           } catch {
-            // 忽略解析错误
+            // Ignore malformed SSE frames from upstream providers.
           }
         }
       });
 
       stream.on('end', () => {
-        const toolCalls = toolCallsMap.size > 0
-          ? Array.from(toolCallsMap.values())
-          : undefined;
+        const toolCalls = toolCallsMap.size > 0 ? Array.from(toolCallsMap.values()) : undefined;
 
         const result: ChatResponse = {
           content: fullContent || null,
