@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Slime icon">
+  <defs>
+    <linearGradient id="slimeFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#9bf6a9" />
+      <stop offset="55%" stop-color="#51d27b" />
+      <stop offset="100%" stop-color="#1faa59" />
+    </linearGradient>
+  </defs>
+  <path d="M64 16c22 0 42 14 42 35 0 9-3 15-7 21-4 5-7 10-7 17 0 14-12 23-28 23S36 103 36 89c0-7-3-12-7-17-4-6-7-12-7-21 0-21 20-35 42-35Z" fill="url(#slimeFill)"/>
+  <path d="M48 40c0-8 7-14 16-14 9 0 16 6 16 14 0 4-2 8-5 11 10 3 17 11 17 22 0 14-12 25-28 25S36 87 36 73c0-11 7-19 17-22-3-3-5-7-5-11Z" fill="#70e08b" opacity=".45"/>
+  <ellipse cx="49" cy="64" rx="6" ry="8" fill="#17351f"/>
+  <ellipse cx="79" cy="64" rx="6" ry="8" fill="#17351f"/>
+  <path d="M50 84c5 6 23 6 28 0" fill="none" stroke="#17351f" stroke-linecap="round" stroke-width="6"/>
+  <circle cx="43" cy="57" r="2" fill="#fff" opacity=".8"/>
+  <circle cx="73" cy="57" r="2" fill="#fff" opacity=".8"/>
+</svg>
