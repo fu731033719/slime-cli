@@ -6,7 +6,7 @@ import { ContextDebugLogger } from '../utils/context-debug-logger';
 
 /**
  * Anthropic Provider
- * 浣跨敤瀹樻柟 SDK 鏇夸唬 axios 鎵嬪姩璋冪敤锛屾敮鎸?streaming
+ * Uses the official SDK instead of manual axios calls and supports streaming.
  */
 export class AnthropicProvider implements AIProvider {
   private client: Anthropic;
@@ -18,7 +18,7 @@ export class AnthropicProvider implements AIProvider {
     this.client = new Anthropic({
       apiKey: config.apiKey!,
       baseURL: this.normalizeBaseURL(config.apiUrl!),
-      timeout: 10 * 60 * 1000, // 10 鍒嗛挓锛孫pus 闀胯緭鍑洪渶瑕佽冻澶熸椂闂?
+      timeout: 10 * 60 * 1000, // Allow long-running model responses.
       defaultHeaders: {
         'User-Agent': 'Slime/0.1.0',
         'x-stainless-lang': undefined as any,
@@ -35,14 +35,14 @@ export class AnthropicProvider implements AIProvider {
   }
 
   /**
-   * 鏍囧噯鍖?base URL锛堝幓鎺夋湯灏剧殑 /v1/messages 绛夎矾寰勶級
+   * Normalize the base URL by stripping trailing endpoint paths such as `/v1/messages`.
    */
   private normalizeBaseURL(url: string): string {
     return url.replace(/\/v1\/messages\/?$/, '').replace(/\/v1\/?$/, '');
   }
 
   /**
-   * 杞崲娑堟伅涓?Anthropic 鏍煎紡
+   * Convert the shared message format into Anthropic's message schema.
    */
   private transformMessages(messages: Message[]): { system?: string; messages: Anthropic.MessageParam[] } {
     const systemMessages = messages.filter(msg => msg.role === 'system');
@@ -55,18 +55,18 @@ export class AnthropicProvider implements AIProvider {
     const flushToolResults = () => {
       if (pendingToolResults.length === 0) return;
       
-      // 鍏堟敹闆嗘墍鏈?tool_result blocks锛屽啀鏀堕泦鎵€鏈?image blocks
-      // Anthropic API 瑕佹眰 tool_result 蹇呴』鍦ㄥ墠闈?
+      // Collect tool results first, then append image blocks.
+      // Anthropic expects tool_result blocks before images.
       const toolResultBlocks: Anthropic.ToolResultBlockParam[] = [];
       const imageBlocks: Anthropic.ImageBlockParam[] = [];
       
       for (const toolResult of pendingToolResults) {
         if (Array.isArray(toolResult.content)) {
-          // 鍒嗙 text 鍜?image blocks
+          // Split text and image blocks.
           const textBlocks = toolResult.content.filter((b: any) => b.type === 'text') as Anthropic.TextBlockParam[];
           const images = toolResult.content.filter((b: any) => b.type === 'image') as Anthropic.ImageBlockParam[];
           
-          // tool_result 鍙繚鐣?text
+          // Keep only text inside tool_result content.
           if (textBlocks.length > 0) {
             toolResultBlocks.push({
               type: 'tool_result',
@@ -83,14 +83,14 @@ export class AnthropicProvider implements AIProvider {
             });
           }
           
-          // 鏀堕泦鍥剧墖锛岀◢鍚庣粺涓€娣诲姞
+          // Collect images and append them after all tool_result blocks.
           imageBlocks.push(...images);
         } else {
           toolResultBlocks.push(toolResult);
         }
       }
       
-      // 鍏抽敭淇锛氬厛娣诲姞鎵€鏈?tool_result锛屽啀娣诲姞鎵€鏈?image
+      // Important ordering fix: tool_result blocks must come before images.
       const contentBlocks: (Anthropic.ToolResultBlockParam | Anthropic.ImageBlockParam)[] = [
         ...toolResultBlocks,
         ...imageBlocks
@@ -147,11 +147,11 @@ export class AnthropicProvider implements AIProvider {
           }
           transformedMessages.push({ role: 'assistant', content: blocks });
         } else {
-          // 澶勭悊绾枃鏈垨 ContentBlock[] 鐨勬儏鍐?
+          // Handle plain text or ContentBlock[] assistant content.
           if (typeof msg.content === 'string' && msg.content.trim()) {
             transformedMessages.push({ role: 'assistant', content: msg.content });
           } else if (Array.isArray(msg.content) && msg.content.length > 0) {
-            // 澶勭悊 ContentBlock[] 鐨勬儏鍐碉紙鍖呭惈鍥剧墖锛?
+            // Handle ContentBlock[] responses, including image blocks.
             const blocks = msg.content.map(block =>
               block.type === 'text'
                 ? { type: 'text' as const, text: block.text }
@@ -183,7 +183,7 @@ export class AnthropicProvider implements AIProvider {
   }
 
   /**
-   * 杞崲宸ュ叿瀹氫箟涓?Anthropic 鏍煎紡
+   * Convert tool definitions into Anthropic's tool schema.
    */
   private transformTools(tools: ToolDefinition[]): Anthropic.Tool[] {
     return tools.map(tool => ({
@@ -194,7 +194,7 @@ export class AnthropicProvider implements AIProvider {
   }
 
   /**
-   * 浠?Anthropic 鍝嶅簲涓彁鍙栫粺涓€鏍煎紡
+   * Convert the Anthropic response into the shared response shape.
    */
   private parseResponse(response: Anthropic.Message): ChatResponse {
     let textContent: string | null = null;
@@ -216,7 +216,7 @@ export class AnthropicProvider implements AIProvider {
       }
     }
 
-    // 鎻愬彇 token 鐢ㄩ噺
+    // Normalize token usage.
     const usage = response.usage ? {
       promptTokens: response.usage.input_tokens ?? 0,
       completionTokens: response.usage.output_tokens ?? 0,
@@ -227,7 +227,7 @@ export class AnthropicProvider implements AIProvider {
   }
 
   /**
-   * 鏅€氳皟鐢?
+   * Non-streaming call.
    */
   async chat(messages: Message[], tools?: ToolDefinition[]): Promise<ChatResponse> {
     const { system, messages: transformed } = this.transformMessages(messages);
@@ -247,7 +247,7 @@ export class AnthropicProvider implements AIProvider {
   }
 
   /**
-   * 娴佸紡璋冪敤
+   * Streaming call.
    */
   async chatStream(messages: Message[], tools?: ToolDefinition[], callbacks?: StreamCallbacks): Promise<ChatResponse> {
     const { system, messages: transformed } = this.transformMessages(messages);
@@ -264,7 +264,7 @@ export class AnthropicProvider implements AIProvider {
     if (tools && tools.length > 0) params.tools = this.transformTools(tools);
 
     try {
-      // [CONTEXT_DEBUG] SDK 璋冪敤鍓嶏細璁板綍瀹屾暣鐨勮姹傚弬鏁?
+      // [CONTEXT_DEBUG] Capture the full request before the SDK call.
       ContextDebugLogger.dumpSdkBoundary('before', undefined, {
         baseURL: this.client.baseURL,
         params
@@ -272,15 +272,15 @@ export class AnthropicProvider implements AIProvider {
 
       const stream = this.client.messages.stream(params);
 
-      // 閫?token 鍥炶皟鏂囨湰
+      // Forward streamed text tokens.
       stream.on('text', (text) => {
         callbacks?.onText?.(text);
       });
 
-      // 绛夊緟瀹屾暣鍝嶅簲
+      // Wait for the final assembled response.
       const finalMessage = await stream.finalMessage();
 
-      // [CONTEXT_DEBUG] SDK 璋冪敤鍚庯細璁板綍瀹屾暣鐨勫搷搴?
+      // [CONTEXT_DEBUG] Capture the final SDK response.
       ContextDebugLogger.dumpSdkBoundary('after', undefined, { response: finalMessage });
 
       const result = this.parseResponse(finalMessage);

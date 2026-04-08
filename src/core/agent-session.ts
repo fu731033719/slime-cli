@@ -1,4 +1,4 @@
-import { Message } from '../types';
+﻿import { Message } from '../types';
 import { AIService } from '../utils/ai-service';
 import { ToolManager } from '../tools/tool-manager';
 import { SkillManager } from '../skills/skill-manager';
@@ -21,8 +21,8 @@ const TRANSIENT_SUBAGENT_STATUS_PREFIX = '[transient_subagent_status]';
 const TRANSIENT_RUNNER_HINT_PREFIX = '[transient_runner_hint]';
 const TRANSIENT_SOFT_CHECK_PREFIX = '[transient_soft_check]';
 const TRANSIENT_SKILLS_LIST_PREFIX = '[transient_skills_list]';
-export const BUSY_MESSAGE = '正在处理上一条消息，请稍候...';
-export const ERROR_MESSAGE = '不好意思，刚才处理出了点问题，你再试一次？';
+export const BUSY_MESSAGE = 'Still working on the previous message. Please wait a moment.';
+export const ERROR_MESSAGE = 'Something went wrong while handling that message. Please try again.';
 
 // ─── 接口定义 ───────────────────────────────────────────
 

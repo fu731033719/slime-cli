@@ -1,4 +1,4 @@
-import { CatsClient, MessageContext } from './client';
+﻿import { CatsClient, MessageContext } from './client';
 import { CatsCompanyConfig, ParsedCatsMessage, CatsFileInfo } from './types';
 import { MessageSender } from './message-sender';
 import { extractContentBlocks } from './content-blocks';
@@ -70,8 +70,8 @@ export class CatsCompanyBot {
     const aiService = new AIService();
     const toolManager = new ToolManager();
 
-    Logger.info(`已注册 ${toolManager.getToolCount()} 个基础工具 (message mode)`);
-    Logger.info(`运行时可用工具数量将根据 skill toolPolicy 动态过滤`);
+    Logger.info(`Registered ${toolManager.getToolCount()} base tools (message mode).`);
+    Logger.info('The effective tool set may still change dynamically based on skill toolPolicy.');
 
     const skillManager = new SkillManager();
 
@@ -94,25 +94,25 @@ export class CatsCompanyBot {
    */
   async start(): Promise<void> {
     Logger.openLogFile('catscompany');
-    Logger.info('正在启动 CatsCompany 机器人...');
+    Logger.info('Starting CatsCompany bot...');
 
     // 加载 skills
     try {
       await this.agentServices.skillManager.loadSkills();
       const skillCount = this.agentServices.skillManager.getAllSkills().length;
       if (skillCount > 0) {
-        Logger.info(`已加载 ${skillCount} 个 skills`);
+        Logger.info(`Loaded ${skillCount} skills.`);
       }
     } catch (error: any) {
-      Logger.warning(`Skills 加载失败: ${error.message}`);
+      Logger.warning(`Failed to load skills: ${error.message}`);
     }
 
     // 注册事件
     this.bot.on('ready', (info: { uid: string; name: string }) => {
       this.botUid = info.uid;
-      const botName = info.name.trim() || '(未设置)';
+      const botName = info.name.trim() || '(unnamed)';
       process.env.CURRENT_AGENT_DISPLAY_NAME = botName;
-      Logger.success(`CatsCompany 机器人已连接，uid=${info.uid}, name=${botName}`);
+      Logger.success(`CatsCompany bot connected: uid=${info.uid}, name=${botName}`);
     });
 
     this.bot.on('message', async (ctx: MessageContext) => {

@@ -6,31 +6,71 @@
   **史莱姆会随着你的沟通越来越接近你预期的形态，史莱姆易塑且持久，勇者请跟着你的史莱姆一起踏上征程吧**
 </div>
 
-
-## 快速开始
+## Quick Start
 
 ```bash
 npm install
 npm run build
-npm run dev
 ```
 
-默认 CLI 命令：
+Start the default interactive chat:
 
 ```bash
-slime
-slime chat
-slime config
-slime dashboard
+node dist/index.js
 ```
 
-## 配置
+Common commands:
 
-复制 `.env.example` 为 `.env`，按需填写你的模型与渠道配置。
+```bash
+node dist/index.js chat
+node dist/index.js config
+node dist/index.js dashboard
+node dist/index.js skill list
+```
 
-本地用户配置文件会写入：
+## Configuration
+
+Copy `.env.example` to `.env`, then fill in your provider settings and channel credentials as needed.
+
+Local user config is written to:
 
 ```bash
 ~/.slime/config.json
 ```
 
+If the home directory is not writable, Slime falls back to:
+
+```bash
+.slime/config.json
+```
+
+## Providers
+
+Built-in provider names:
+
+- `openai`
+- `anthropic`
+- `deepseek`
+- `minimax`
+
+DeepSeek example:
+
+```env
+GAUZ_LLM_PROVIDER=deepseek
+GAUZ_LLM_API_KEY=your_key
+GAUZ_LLM_API_BASE=https://api.deepseek.com/v1
+GAUZ_LLM_MODEL=deepseek-chat
+```
+
+MiniMax example:
+
+```env
+GAUZ_LLM_PROVIDER=minimax
+GAUZ_LLM_API_KEY=your_key
+GAUZ_LLM_API_BASE=https://api.minimaxi.com/v1
+GAUZ_LLM_MODEL=MiniMax-M2.7
+```
+
+## More Docs
+
+- Command reference: [docs/COMMANDS.md](docs/COMMANDS.md)

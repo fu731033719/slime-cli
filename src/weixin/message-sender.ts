@@ -90,7 +90,7 @@ export class MessageSender {
       }
     );
 
-    console.log('[DEBUG] 寰俊涓婁紶URL鍝嶅簲:', JSON.stringify(uploadResp.data));
+    console.log('[DEBUG] Weixin upload URL response:', JSON.stringify(uploadResp.data));
 
     let uploadParam: string;
     if (uploadResp.data.upload_param) {
@@ -99,10 +99,10 @@ export class MessageSender {
       const url = new URL(uploadResp.data.upload_full_url);
       uploadParam = url.searchParams.get('encrypted_query_param') || '';
       if (!uploadParam) {
-        throw new Error('鏃犳硶浠?upload_full_url 鎻愬彇 encrypted_query_param');
+        throw new Error('Failed to extract encrypted_query_param from upload_full_url');
       }
     } else {
-      throw new Error('寰俊 API 鏈繑鍥?upload_param 鎴?upload_full_url');
+      throw new Error('Weixin API did not return upload_param or upload_full_url');
     }
 
     const downloadParam = await uploadBufferToCDN(

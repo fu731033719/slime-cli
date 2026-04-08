@@ -15,7 +15,8 @@ import { StopSubagentTool } from './stop-subagent-tool';
 import { ResumeSubagentTool } from './resume-subagent-tool';
 
 /**
- * 宸ュ叿鍚嶅埆鍚嶆槧灏勶紙Claude Code 宸ュ叿鍚?鈫?Slime 鍐呴儴娉ㄥ唽鍚嶏級
+ * Tool name aliases.
+ * Maps Claude-style tool names to Slime's internal registrations.
  */
 const TOOL_NAME_ALIASES: Record<string, string> = {
   Bash: 'execute_shell',
@@ -32,7 +33,7 @@ function resolveToolName(name: string): string {
 }
 
 /**
- * 宸ュ叿绠＄悊鍣?- 绠＄悊鎵€鏈夊彲鐢ㄧ殑宸ュ叿
+ * Tool registry and execution entry point.
  */
 export class ToolManager implements ToolExecutor {
   private tools: Map<string, Tool> = new Map();
@@ -49,7 +50,7 @@ export class ToolManager implements ToolExecutor {
   }
 
   private registerDefaultTools(): void {
-    // 鍩虹鏂囦欢宸ュ叿 (6)
+    // Core file tools.
     this.registerTool(new ReadTool());
     this.registerTool(new WriteTool());
     this.registerTool(new EditTool());
@@ -57,19 +58,19 @@ export class ToolManager implements ToolExecutor {
     this.registerTool(new GrepTool());
     this.registerTool(new ShellTool());
 
-    // 閫氫俊宸ュ叿 (2)
+    // Outbound communication tools.
     this.registerTool(new SendTextTool());
     this.registerTool(new SendFileTool());
 
-    // 鍏冨伐鍏?
+    // Meta tools.
     this.registerTool(new SpawnSubagentTool());
 
-    // Sub-Agent 绠＄悊 (2)
+    // Sub-agent management tools.
     this.registerTool(new CheckSubagentTool());
     this.registerTool(new StopSubagentTool());
     this.registerTool(new ResumeSubagentTool());
 
-    // Skill 璋冪敤 (1)
+    // Skill invocation tools.
     this.registerTool(new SkillTool());
   }
 
@@ -85,14 +86,14 @@ export class ToolManager implements ToolExecutor {
   }
 
   /**
-   * 鑾峰彇鎵€鏈夊伐鍏峰畾涔夛紙鐩存帴杩斿洖鍏ㄩ儴锛屼笉鍐嶈繃婊わ級
+   * Return all tool definitions without filtering.
    */
   getToolDefinitions(): ToolDefinition[] {
     return Array.from(this.tools.values()).map(tool => tool.definition);
   }
 
   /**
-   * 鎵ц宸ュ叿璋冪敤
+   * Execute one tool call.
    */
   async executeTool(
     toolCall: ToolCall,
@@ -103,14 +104,14 @@ export class ToolManager implements ToolExecutor {
     const tool = this.tools.get(toolName);
 
     if (!tool) {
-      return {
-        tool_call_id: toolCall.id,
-        role: 'tool',
-        name: toolName,
-        content: `閿欒锛氭湭鎵惧埌宸ュ叿 "${toolName}"`,
-        ok: false,
-        errorCode: 'TOOL_NOT_FOUND',
-        retryable: false,
+        return {
+          tool_call_id: toolCall.id,
+          role: 'tool',
+          name: toolName,
+          content: `Error: tool "${toolName}" was not found`,
+          ok: false,
+          errorCode: 'TOOL_NOT_FOUND',
+          retryable: false,
       };
     }
 
@@ -130,7 +131,7 @@ export class ToolManager implements ToolExecutor {
           tool_call_id: toolCall.id,
           role: 'tool',
           name: toolCall.function.name,
-          content: `宸ュ叿鍙傛暟瑙ｆ瀽閿欒: ${error.message}`,
+          content: `Tool argument parsing failed: ${error.message}`,
           ok: false,
           errorCode: 'INVALID_TOOL_ARGUMENTS',
           retryable: false,
@@ -139,7 +140,7 @@ export class ToolManager implements ToolExecutor {
 
       const output = await tool.execute(args, context);
 
-      // 澶勭悊鐗规畩杩斿洖鏍煎紡锛堝鍥剧墖闇€瑕侀澶栨秷鎭級
+      // Handle special return formats such as image reads with extra follow-up messages.
       if (output && typeof output === 'object' && 'toolContent' in output && 'newMessages' in output) {
         const specialOutput = output as { toolContent: string; newMessages: any[] };
         return {
@@ -166,7 +167,7 @@ export class ToolManager implements ToolExecutor {
         tool_call_id: toolCall.id,
         role: 'tool',
         name: toolCall.function.name,
-        content: `宸ュ叿鎵ц閿欒: ${error.message}`,
+        content: `Tool execution failed: ${error.message}`,
         ok: false,
         errorCode: 'TOOL_EXECUTION_ERROR',
         retryable: false,

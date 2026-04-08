@@ -4,7 +4,7 @@ import { ConfigManager } from '../utils/config';
 import { styles } from '../theme/colors';
 
 export async function configCommand(): Promise<void> {
-  Logger.title('Slime 閰嶇疆');
+  Logger.title('Slime Configuration');
 
   const currentConfig = ConfigManager.getConfig();
 
@@ -25,28 +25,28 @@ export async function configCommand(): Promise<void> {
     {
       type: 'input',
       name: 'apiUrl',
-      message: styles.text('API鍦板潃:'),
+      message: styles.text('API URL:'),
       default: currentConfig.apiUrl,
       prefix: styles.highlight('?'),
     },
     {
       type: 'input',
       name: 'apiKey',
-      message: styles.text('API瀵嗛挜:'),
+      message: styles.text('API Key:'),
       default: currentConfig.apiKey || '',
       prefix: styles.highlight('?'),
     },
     {
       type: 'input',
       name: 'model',
-      message: styles.text('妯″瀷鍚嶇О:'),
+      message: styles.text('Model name:'),
       default: currentConfig.model,
       prefix: styles.highlight('?'),
     },
     {
       type: 'number',
       name: 'temperature',
-      message: styles.text('娓╁害鍙傛暟 (0-2):'),
+      message: styles.text('Temperature (0-2):'),
       default: currentConfig.temperature,
       prefix: styles.highlight('?'),
     },
@@ -61,6 +61,6 @@ export async function configCommand(): Promise<void> {
   };
 
   ConfigManager.saveConfig(finalConfig);
-  Logger.success('閰嶇疆宸蹭繚瀛橈紒');
+  Logger.success('Configuration saved.');
 }
 
